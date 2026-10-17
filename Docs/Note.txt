@@ -1,0 +1,98 @@
+- Notas deixadas de forma intencional para entender linha de raciocinio
+
+
+Link: https://broadcast-adec0.web.app
+
+React + TypeScript + Vite, Material UI, Tailwind CSS, Firebase Authentication, Firestore e Cloud Functions
+
+Sem classes, paradigma funcional
+
+/web - frontend app
+/functions - cloud functions
+
+- Modelagem
+todo documento com ownerId - id do usuário logado
+sem subcoleções
+
+- Collections
+
+. connections: uid, name
+. contacts: uid, connectionId, name, phone
+. messages: uid, connectionId, contactsIds(array), body, status, scheduleDate, sentDate
+
+
+- Login (Firebase Authentication) - Check
+- cadastro (Firebase Authentication) - Check
+- "Conexão / Instancia" (Nome) - Check
+   . listar
+   . criar
+   . editar
+   . Removeer
+- "Contatos" (Nome, Telefone) - Check
+   . listar
+   . criar
+   . editar
+   . Remover
+- BROADCAST
+   . Selecionar um ou mais contatos; - Check
+   . Escrever a mensagem que deseja enviar; - Check
+   . Enviar a mensagem imediatamente; - Check
+   . Agendar uma mensagem para uma data e horário futuros; - Check
+   . Visualizar as mensagens criadas; - Check
+   . Filtrar entre mensagens **enviadas** e **agendadas**; - Check
+   . Editar e excluir mensagens. - Check
+
+
+NPM
+
+npm i firebase
+npm i -g firebase-tools
+npm i react-router-dom
+- MUI
+npm install @mui/material @emotion/react @emotion/styled
+npm install tailwindcss @tailwindcss/vite
+npm i -D prettier
+
+
+Situações...
+
+Como o aplicativo é apenas para um teste simples não foi implementado pensando em receber callback de entrega
+ou seja se 1 agendamento foi feito para 5 contatos e 2 deles não receberam a mensagem não tem como ter essa distinção
+uma vez que para esse teste a collection messages foi pensada apenas para indicar inteção de envio
+
+A escolha de arquitetura foi pensada apenas pra atender os requisitos do teste mas para esse tipo de informação poderia
+ser usado uma collection associativa ou uma collection que indica mensagens que chegaram de fato ao destinatário
+também consideraria qual meio de envio da mensagem E-mail ou API de whatsapp
+
+Todas as listas usam onSnapshot então isso permite que mais usuários usem ao mesmo tempo sem procupações com atraso nas informações
+Tela atualiza sozinha
+
+A ediçao só é permitida para mensagens agendadas, enviadas podem ser excluidas para sair do histórico
+Pensando em uma aplicação real talvez seria interessante uma flag de exclusão para não perder registros históricos
+essas mensagens não poluiriam a tela mas ainda teria forma de acessar elas
+
+As rules firebase não validam se cada contactId realmente existe
+não é necessário para esse teste, mas para um aplicativo real seria bom ter
+
+O envio é apenas simulado alterando status da collection que registra inteção de envio
+
+O contato excluido continua nas mensagens agendadas o correto para uma aplicação real seria verificar e excluir também o id do contato delas
+devido a ser um teste também deixei de fora
+
+Testes automatizados também seriam de extrema importância para um caso real
+
+A principio coloquei as mensagens para serem criadas no firebase pelo frontend mesmo mas isso é uma falha de segurança
+uma vez que na criação da mensagem não é verificado que os contatos que recebrão são mesmo daquela conexão e daquela usuário
+a aplicação dependeria da boa indole do usuário pois é uma vulnerabilidade. Então optei por alterar e delegar essa função para o backend
+
+createMessage function vai ficar responsável por validar também os contatos que recebrão aquela mensagem garantindo que todos pertençam ao usuário correto
+
+também adicionado updateMessage para verificação e permitir alteração de contatos de mensagens agendadas
+
+- Como rodar (Precisa preencher chaves do Firebase)
+cd web && cp .env.example .env
+npm install && npm run dev
+
+- Deploy
+cd web && npm run build && cd ..
+firebase deploy
